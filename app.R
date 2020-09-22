@@ -48,11 +48,16 @@ ui <- fluidPage(
     # Sidebar with a slider input for number of bins
     sidebarLayout(
         sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
+            # sliderInput("bins",
+            #             "Number of bins:",
+            #             min = 1,
+            #             max = 50,
+            #             value = 30)
+            selectizeInput("genus",
+                        "Genus:",
+                        choices = NULL,
+                        selected = NULL
+                        )
         ),
 
         # Show a plot of the generated distribution
@@ -62,16 +67,15 @@ ui <- fluidPage(
     )
 )
 
-# Define server logic required to draw a histogram
-server <- function(input, output) {
+# Define server logic required to draw a plot
+server <- function(input, output, session) {
 
     output$distPlot <- renderPlot({
-        # # generate bins based on input$bins from ui.R
-        # x    <- faithful[, 2]
-        # bins <- seq(min(x), max(x), length.out = input$bins + 1)
-        #
-        # # draw the histogram with the specified number of bins
-        # hist(x, breaks = bins, col = 'darkgray', border = 'white')
+      updateSelectizeInput(session, 'genus',
+                           choices = stem_spp$Genus,
+                           server = TRUE)
+
+      # Draw frequency polygon plot
       ggplot(stem_spp, aes(x = dbh, color = Census)) +
         geom_freqpoly(position = "identity", binwidth = 125) +
         xlab("Diameter at Breast Height (DBH)") +
