@@ -8,42 +8,47 @@
 #
 
 library(shiny)
+library(tidyverse)
+library(tsibble)
+library(lubridate)
+library(fpp3)
+library(fpp2)
+library(ggfortify)
+library(lubridate)
 
-# Define UI for application that draws a histogram
 ui <- fluidPage(
-
-    # Application title
-    titlePanel("Old Faithful Geyser Data"),
-
-    # Sidebar with a slider input for number of bins
     sidebarLayout(
         sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
+            selectInput(inputId = "sp", label = "Specie: ",
+                        choices = c("amar", "beth", "caca", "frni", "havi", "ilve", "libe", "saca", "vipr"),
+                        selected = "libe"),
+
         ),
 
-        # Show a plot of the generated distribution
         mainPanel(
-           plotOutput("distPlot")
+            plotOutput(outputId = "plot")
         )
     )
 )
-
-# Define server logic required to draw a histogram
+#help from  and Sophie's suggestion
 server <- function(input, output) {
 
-    output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
+    df_subset <- reactive({
+        a <- filter(total_alive, sp == input$sp)
+        return(a)
+    })
 
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white')
+    output$plot <- renderPlot({
+        ggplot(data = df_subset(), aes_string(x=input$sp, y=input$sp)) +
+            geom_line(aes(x=date, y= dbh,
+                          group = interaction(treeID, StemTag),
+                          color = quadrat)) +
+            ggtitle("Specie's DBH based on Quadrat (2009-2013)") +
+            ylab("Diameter At Breast Height") +
+            xlab("Year")
+
+
     })
 }
 
-# Run the application
 shinyApp(ui = ui, server = server)
