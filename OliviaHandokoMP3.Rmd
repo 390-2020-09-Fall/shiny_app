@@ -12,7 +12,7 @@ library(ggfortify)
 library(lubridate)
 library(shiny)
 ```
-
+#moved the tree_census folder to the shinyapp project
 ```{r setup, include=FALSE}
 read.csv("tree_main_census/data/census-csv-files/scbi.stem3.csv")
 read.csv("tree_main_census/data/census-csv-files/scbi.stem2.csv")
@@ -149,12 +149,6 @@ new_scbi_stem1_notalive <- new_scbi_stem1_notalive %>%
 ```
 
 ```{r}
-# base_plot <- ggplot(total_alive) + 
-#   geom_line(aes(x=date, y=dbh, 
-#                 group = interaction(treeID, StemTag), 
-#                 color = quadrat))
-# base_plot
-
 ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
