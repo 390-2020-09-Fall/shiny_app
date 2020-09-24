@@ -8,42 +8,48 @@
 #
 
 library(shiny)
+library(tidyverse)
+library(fpp3)
+library(dplyr)
+library(readr)
+
+
+stem1 <- read_csv("tree_main_census/data/census-csv-files/scbi.stem1.csv")
+#stem1<- read.csv("https://github.com/390-2020-09-Fall/SCBI-ForestGEO-Data/blob/master/tree_main_census/data/census-csv-files/scbi.stem1.csv")
+
 
 # Define UI for application that draws a histogram
+
 ui <- fluidPage(
-
-    # Application title
-    titlePanel("Old Faithful Geyser Data"),
-
-    # Sidebar with a slider input for number of bins
     sidebarLayout(
         sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
+            selectInput("sp", label = "Species", choices =as.character(unique(stem1$sp))) # I got this "choice" suggestion from Emma:)
         ),
-
-        # Show a plot of the generated distribution
         mainPanel(
-           plotOutput("distPlot")
+            plotOutput("distplot")
         )
     )
 )
 
-# Define server logic required to draw a histogram
 server <- function(input, output) {
 
-    output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
+    #filter the specie the user chosed
 
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white')
+    # chosen_species <- reactive({
+    #   species <- filter(stem1, sp == input$sp)
+    #   return(species)
+    # })
+
+    #plot the non-interactive plot
+    output$distplot <- renderPlot({
+        ggplot(stem1) +
+            geom_boxplot(aes(x =sp,y=dbh,fill=status))+
+            coord_flip()+
+            labs(x = "diameter at breast height", y = "Species", title = "The relationship between species and DBH")
     })
+
 }
 
 # Run the application
 shinyApp(ui = ui, server = server)
+
