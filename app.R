@@ -43,21 +43,14 @@ stem_spp <- left_join(stem, spptable, by = "sp")
 ui <- fluidPage(
 
     # Application title
-    titlePanel("Old Faithful Geyser Data"),
+    titlePanel("DBH Distribution at SCBI-ForestGeo site"),
 
-    # Sidebar with a slider input for number of bins
+    # Sidebar with a drop down menu input for genus
     sidebarLayout(
         sidebarPanel(
-            # sliderInput("bins",
-            #             "Number of bins:",
-            #             min = 1,
-            #             max = 50,
-            #             value = 30)
-            selectizeInput("genus",
+            selectInput("genus",
                         "Genus:",
-                        choices = NULL,
-                        selected = NULL
-                        )
+                        choices = as.character(unique(stem_spp$Genus))) # Convert unique genus from dataframe into character vector
         ),
 
         # Show a plot of the generated distribution
@@ -70,17 +63,19 @@ ui <- fluidPage(
 # Define server logic required to draw a plot
 server <- function(input, output, session) {
 
+  # Filter dataframe based on user selected genus
+  filtered <- reactive({
+    stem_spp_filter <- filter(stem_spp, Genus == toString(input$genus)) # Convert selected genus into a string
+    return(stem_spp_filter)
+  })
+
     output$distPlot <- renderPlot({
-      updateSelectizeInput(session, 'genus',
-                           choices = stem_spp$Genus,
-                           server = TRUE)
 
       # Draw frequency polygon plot
-      ggplot(stem_spp, aes(x = dbh, color = Census)) +
+      ggplot(filtered(), aes(x = dbh, color = Census)) +
         geom_freqpoly(position = "identity", binwidth = 125) +
         xlab("Diameter at Breast Height (DBH)") +
-        ylab("Count") +
-        ggtitle("Distribution of DBH at SCBI-ForestGeo site across census years")
+        ylab("Count")
     })
 }
 
