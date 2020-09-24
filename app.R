@@ -13,10 +13,33 @@ library(fpp3)
 library(dplyr)
 library(readr)
 
+stem1 <- read_csv("data/scbi.stem1.csv")
+stem2 <- read_csv("data/scbi.stem2.csv")
+stem3 <- read_csv("data/scbi.stem3.csv")
 
-stem1 <- read_csv("tree_main_census/data/census-csv-files/scbi.stem1.csv")
-#stem1<- read.csv("https://github.com/390-2020-09-Fall/SCBI-ForestGEO-Data/blob/master/tree_main_census/data/census-csv-files/scbi.stem1.csv")
+full <- rbind(stem1, stem2, stem3) %>%
+  mutate(ExactDate = lubridate::mdy(ExactDate),
+         DFstatus = as.factor(DFstatus),
+         dbh = as.numeric(dbh))
+alive <- full %>%
+  filter(DFstatus == "alive")
+other <- full %>%
+  filter(DFstatus != "alive")
 
+facet_labels <- c(`1` = "Census 1 in 2008-2010", `2` = "Census 2 in 2013", `3` = "Census 3 in 2018")
+
+alive %>% ggplot(aes(dbh)) +
+  geom_histogram() +
+  facet_wrap(~CensusID, labeller = labeller(CensusID = facet_labels)) +
+  labs(x = "Diameter at breast height (dbh), unit: centimeter", y = "number of trees",
+       title = "Histogram of dbh of trees in census",
+       subtitle = "(for alive trees only)")
+other %>% ggplot(aes(dbh)) +
+  geom_histogram() +
+  facet_wrap(~CensusID, labeller = labeller(CensusID = facet_labels)) +
+  labs(x = "Diameter at breast height (dbh), unit: centimeter", y = "number of trees",
+       title = "Histogram of dbh of trees in census",
+       subtitle = "(for non-alive trees)")
 
 # Define UI for application that draws a histogram
 
@@ -52,3 +75,6 @@ server <- function(input, output) {
 
 # Run the application
 shinyApp(ui = ui, server = server)
+
+shinyapp
+
