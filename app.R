@@ -12,69 +12,51 @@ library(tidyverse)
 library(fpp3)
 library(dplyr)
 library(readr)
+library(plotly)
 
 stem1 <- read_csv("data/scbi.stem1.csv")
 stem2 <- read_csv("data/scbi.stem2.csv")
 stem3 <- read_csv("data/scbi.stem3.csv")
 
-full <- rbind(stem1, stem2, stem3) %>%
+alive <- rbind(stem1, stem2, stem3) %>%
   mutate(ExactDate = lubridate::mdy(ExactDate),
          DFstatus = as.factor(DFstatus),
-         dbh = as.numeric(dbh))
-alive <- full %>%
+         dbh = as.numeric(dbh),
+         CensusID = as.numeric(CensusID),
+         census_time = ifelse(CensusID == 1, "2008-2010",
+                              ifelse(CensusID == 2, "2013",
+                                     ifelse(CensusID == 3, "2018", "0"))
+                              )
+           ) %>%
   filter(DFstatus == "alive")
-other <- full %>%
-  filter(DFstatus != "alive")
-
-facet_labels <- c(`1` = "Census 1 in 2008-2010", `2` = "Census 2 in 2013", `3` = "Census 3 in 2018")
-
-alive %>% ggplot(aes(dbh)) +
-  geom_histogram() +
-  facet_wrap(~CensusID, labeller = labeller(CensusID = facet_labels)) +
-  labs(x = "Diameter at breast height (dbh), unit: centimeter", y = "number of trees",
-       title = "Histogram of dbh of trees in census",
-       subtitle = "(for alive trees only)")
-other %>% ggplot(aes(dbh)) +
-  geom_histogram() +
-  facet_wrap(~CensusID, labeller = labeller(CensusID = facet_labels)) +
-  labs(x = "Diameter at breast height (dbh), unit: centimeter", y = "number of trees",
-       title = "Histogram of dbh of trees in census",
-       subtitle = "(for non-alive trees)")
-
-# Define UI for application that draws a histogram
 
 ui <- fluidPage(
+  titlePanel("Histogram of dbh of trees in census (for alive trees only)"),
   sidebarLayout(
     sidebarPanel(
-    selectInput("sp", label = "Species", choices =as.character(unique(stem1$sp))) # I got this "choice" suggestion from Emma:)
-    ),
+      selectInput("census_time",
+                  "Time of Census:",
+                  choices = as.character(unique(alive$census_time)))
+      ),
     mainPanel(
-        plotOutput("distplot")
+      plotOutput("distPlot")
     )
-    )
+  )
 )
 
 server <- function(input, output) {
 
-  #filter the specie the user chosed
+  census_filter <- reactive({
+    each_census <- filter(alive, census_time == toString(input$census_time))
+    return(each_census)
+  })
 
-  # chosen_species <- reactive({
-  #   species <- filter(stem1, sp == input$sp)
-  #   return(species)
-  # })
-
-  #plot the non-interactive plot
-    output$distplot <- renderPlot({
-      ggplot(stem1) +
-        geom_boxplot(aes(x =sp,y=dbh,fill=status))+
-        coord_flip()+
-        labs(x = "diameter at breast height", y = "Species", title = "The relationship between species and DBH")
-    })
-
+  output$distPlot <- renderPlot({
+   ggplot(census_filter(), aes(x = dbh)) +
+      geom_histogram() +
+      labs(x = "Diameter at breast height (dbh), unit: centimeter", y = "number of trees")
+ })
 }
 
 # Run the application
 shinyApp(ui = ui, server = server)
-
-shinyapp
-
