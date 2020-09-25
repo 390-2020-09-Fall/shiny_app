@@ -1,49 +1,104 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
 
 library(shiny)
+library(tidyverse)
+library(readr)
 
-# Define UI for application that draws a histogram
+setwd("~/Desktop/390/SCBI-ForestGEO-Data/tree_main_census/data/census-csv-files/")
+scbi_stem1 <- read_csv("scbi.stem1.csv")
+scbi_stem2 <- read_csv("scbi.stem2.csv")
+scbi_stem3 <- read_csv("scbi.stem3.csv")
+scbi_spptable <- read_csv("scbi.spptable.csv")
+
+# Set "base plot" of points that won't change
+stem1 <- scbi_stem1 %>%
+  filter(dbh != "NULL") %>%
+  mutate(dbh = as.numeric(dbh)) %>%
+  select(sp, dbh, CensusID) %>%
+  group_by(sp) %>%
+  summarize(avg_dbh_sp = mean(dbh),
+            census_year = mean(CensusID))
+
+stem2 <- scbi_stem2 %>%
+  filter(dbh != "NULL") %>%
+  mutate(dbh = as.numeric(dbh)) %>%
+  select(sp, CensusID, dbh) %>%
+  group_by(sp) %>%
+  summarize(avg_dbh_sp = mean(dbh),
+            census_year = mean(CensusID))
+
+stem3 <- scbi_stem3 %>%
+  filter(dbh != "NULL") %>%
+  mutate(dbh = as.numeric(dbh)) %>%
+  select(sp, CensusID, dbh) %>%
+  group_by(sp) %>%
+  summarize(avg_dbh_sp = mean(dbh),
+            census_year = mean(CensusID))
+
+stem_joined <- rbind(stem1, stem2, stem3)
+
+genus_dbh <- stem_joined %>%
+  inner_join(scbi_spptable, by = "sp") %>%
+  select(Genus, avg_dbh_sp, census_year) %>%
+  group_by(Genus, census_year) %>%
+  summarize(avg_dbh = mean(avg_dbh_sp))
+
+year.labs <- c("2008", "2013", "2018")
+names(year.labs) <- c("1", "2", "3")
+
+
+
 ui <- fluidPage(
 
-    # Application title
-    titlePanel("Old Faithful Geyser Data"),
 
-    # Sidebar with a slider input for number of bins
+    titlePanel("Average DBH for Each Genus in the SCBI Census"),
+
+
     sidebarLayout(
-        sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
-        ),
-
-        # Show a plot of the generated distribution
-        mainPanel(
-           plotOutput("distPlot")
-        )
+      sidebarPanel(
+        selectInput("census_year", "Census Year",
+                    choices = c("2008" = "1","2013" = "2", "2018" = "3"),
+                    selected = "3"),
+        checkboxGroupInput("Genus", "Genus",
+                           choices = c("Acer","Ailanthus","Amelanchier","Asimina",
+                                       "Berberis","Carpinus","Carya","Castanea","Celtis",
+                                       "Cercis","Chionanthus","Cornus","Corylus",
+                                       "Crataegus","Diospyros","Elaeagnus","Euonymus",
+                                       "Fagus","Fraxinus","Hamamelis","Ilex","Juglans",
+                                       "Juniperus","Lindera","Liriodendron","Lonicera","Nyssa",
+                                       "Paulownia","Pinus","Platanus","Prunus","Quercus",
+                                       "Rhododendron","Robinia","Rosa","Rubus","Sambucus",
+                                       "Sassafras","Tilia","Ulmus","Viburnum"),
+                           selected = c("Acer","Ailanthus","Amelanchier","Asimina",
+                                        "Berberis","Carpinus","Carya","Castanea","Celtis",
+                                        "Cercis","Chionanthus","Cornus","Corylus",
+                                        "Crataegus","Diospyros","Elaeagnus","Euonymus",
+                                        "Fagus","Fraxinus","Hamamelis","Ilex","Juglans",
+                                        "Juniperus","Lindera","Liriodendron","Lonicera","Nyssa",
+                                        "Paulownia","Pinus","Platanus","Prunus","Quercus",
+                                        "Rhododendron","Robinia","Rosa","Rubus","Sambucus",
+                                        "Sassafras","Tilia","Ulmus","Viburnum"),
+                           inline = FALSE),
+      ),
+      plotOutput("avg_dbh")
     )
 )
 
-# Define server logic required to draw a histogram
+
+
+
 server <- function(input, output) {
 
-    output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
+    output$distplot <- renderPlot({
 
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white')
+        ggplot(data = genus_dbh, mapping = aes(x = Genus, y = avg_dbh, fill = census_year))+
+          geom_bar(color = "white", stat='identity')+
+          labs(title = "Average DBH for Each Genus in the SCBI Census", subtitle = "dark blue: 2008        medium blue: 2013        light blue: 2018", x = "Genus", y = "Average DBH")+
+          theme(axis.text.x=element_text(angle = 90, size = 9), legend.position = "none")
     })
+
 }
 
-# Run the application
+
+
+
 shinyApp(ui = ui, server = server)
