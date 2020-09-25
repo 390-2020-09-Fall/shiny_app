@@ -22,16 +22,16 @@ ui <- fluidPage(
     # Sidebar with a slider input for number of bins
     sidebarLayout(
         sidebarPanel(
-            checkboxGroupInput(inputId = "stemdata",
+            checkboxGroupInput(inputId = "stems_plot",
                                label = "Census year:",
-                               choices = c("stem1" = "stem1",
-                                 "stem2" = "stem2",
-                                 "stem3" = "stem3")
+                               choices = c("2008-2010" = "stems_plot$CensusID == 1",
+                                 "2013" = "stems_plot$CensusID == 2",
+                                 "2018" = "stems_plot$CensusID == 3")
             ),
             sliderInput("bins",
                         "Number of bins:",
                         min = 1,
-                        max = 50,
+                        max = 30,
                         value = 15)
             ),
 
@@ -45,64 +45,34 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
 
-    stem1 <- here::here("data/scbi.stem3.csv") %>%
+    stem1 <- here::here("data/scbi.stem1.csv") %>%
         read_csv()
-    stem2 <- here::here("data/scbi.stem3.csv") %>%
+    stem2 <- here::here("data/scbi.stem2.csv") %>%
         read_csv()
     stem3 <- here::here("data/scbi.stem3.csv") %>%
         read_csv()
 
     stems <- rbind(stem1, stem2, stem3)
 
-    stem1 <- stem1 %>%
-        filter(dbh != "NULL") %>%
-        na.omit(stem1) %>%
-        mutate(dbh = as.numeric(dbh))
-
-    stem2 <- stem2 %>%
-        filter(dbh != "NULL") %>%
-        na.omit(stem2) %>%
-        mutate(dbh = as.numeric(dbh))
-
-    stem3 <- stem3 %>%
-        filter(dbh != "NULL") %>%
-        na.omit(stem3) %>%
-        mutate(dbh = as.numeric(dbh))
-
-     stems <- stems %>%
+    stems_plot <- stems %>%
         filter(dbh != "NULL") %>%
         na.omit(stems) %>%
-        mutate(dbh = as.numeric(dbh))
+        mutate(CensusID = as.factor(CensusID),
+               dbh = as.numeric(dbh))
 
-     x_reactive <- reactive({
-
-
-         switch(input$stemdata,
-                "stem1" = stem1$stem1,          # If the value is 'geyser', return data from faithful
-                "stem2" = stem2$stem2, # if the value is 'economics' return unemployment data
-                "stem3" = stem3$stem3 # If the value is 'diamonds' return price data
-                )
-
-     })
 
     output$histPlot <- renderPlot({
         # generate bins based on input$bins from ui.R
-#        x    <- faithful[, 2]
-#        bins <- seq(min(x), max(x), length.out = input$bins + 1)
+        x <- stems_plot[, 2]
+        bins <- seq(min(x), max(x), length.out = input$bins)
+
 
         # draw the histogram with the specified number of bins
-        ggplot(data = x_reactive, aes(dbh)) +
-            geom_histogram(data = stems, fill = "red", alpha = 0.2) +
-#            geom_histogram(data = stem2, fill = "blue", alpha = 0.2) +
-#            geom_histogram(data = stem3, fill = "green", alpha = 0.2) +
-            stat_bin(bins = 15) +
-#            scale_fill_manual(values = c("#788475", "#5E5D5C")) +
+        ggplot(data = stems_plot, aes(x = dbh, fill = CensusID)) +
+            geom_histogram(data = stems_plot[stems_plot$CensusID == input$stems_plot,], breaks = bins, alpha = 0.5, position = "identity") +
             labs(title = "Distrubution of Tree Diameters at the Smithsonian Conservation Biology \n Institute (SCBI) in Front Royal, VA ",
                  x = "Diameter at Breast Height (DBH)",
-                 y= "Number of Trees",
-                 fill="") +
-            theme(plot.title = element_text(hjust = 0.5)) +
-            theme_ipsum()
+                 y= "Number of Trees")
 
     })
 }
