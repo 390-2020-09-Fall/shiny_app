@@ -7,6 +7,7 @@
 #    http://shiny.rstudio.com/
 #
 
+
 library(shiny)
 library(tidyverse)
 library(fpp3)
@@ -14,7 +15,7 @@ library(dplyr)
 library(readr)
 
 
-stem1 <- read_csv("tree_main_census/data/census-csv-files/scbi.stem1.csv")
+stem1 <- read_csv("data/scbi.stem1.csv")
 #stem1<- read.csv("https://github.com/390-2020-09-Fall/SCBI-ForestGEO-Data/blob/master/tree_main_census/data/census-csv-files/scbi.stem1.csv")
 
 
