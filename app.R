@@ -3,7 +3,7 @@
 # the 'Run App' button above.
 #
 # Find out more about building applications with Shiny here:
-#
+#cd
 #    http://shiny.rstudio.com/
 #
 
@@ -35,17 +35,16 @@ server <- function(input, output) {
 
     #filter the specie the user chosed
 
-    # chosen_species <- reactive({
-    #   species <- filter(stem1, sp == input$sp)
-    #   return(species)
-    # })
+     chosen_species <- reactive({
+       species <- filter(stem1, sp == input$sp)
+       return(species)
+     })
 
     #plot the non-interactive plot
     output$distplot <- renderPlot({
-        ggplot(stem1) +
+        ggplot(chosen_species()) +
             geom_boxplot(aes(x =sp,y=dbh,fill=status))+
-            coord_flip()+
-            labs(x = "diameter at breast height", y = "Species", title = "The relationship between species and DBH")
+            labs(x = "Species", y = "Diameter at breast height", title = "The relationship between species and DBH")
     })
 
 }
