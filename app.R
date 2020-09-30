@@ -24,15 +24,15 @@ ui <- fluidPage(
         sidebarPanel(
             checkboxGroupInput(inputId = "stems_plot",
                                label = "Census year:",
-                               choices = c("2008-2010" = "stems_plot$CensusID == 1",
-                                 "2013" = "stems_plot$CensusID == 2",
-                                 "2018" = "stems_plot$CensusID == 3")
+                               choices = c("2008-2010" = "1",
+                                 "2013" = "2",
+                                 "2018" = "3")
             ),
             sliderInput("bins",
                         "Number of bins:",
                         min = 1,
-                        max = 30,
-                        value = 15)
+                        max = 50,
+                        value = 20)
             ),
 
         # Show a plot of the generated distribution
@@ -54,11 +54,7 @@ server <- function(input, output) {
 
     stems <- rbind(stem1, stem2, stem3)
 
-    stems_plot <- stems %>%
-        filter(dbh != "NULL") %>%
-        na.omit(stems) %>%
-        mutate(CensusID = as.factor(CensusID),
-               dbh = as.numeric(dbh))
+
 
 
     output$histPlot <- renderPlot({
@@ -66,10 +62,18 @@ server <- function(input, output) {
         x <- stems_plot[, 2]
         bins <- seq(min(x), max(x), length.out = input$bins)
 
+        stems_plot <- stems %>%
+            filter(dbh != "NULL") %>%
+            filter(CensusID %in% input$stems_plot) %>%
+            #       filter(CensusID %in% c("1", "2")) %>%
+            na.omit(stems) %>%
+            mutate(CensusID = as.factor(CensusID),
+                   dbh = as.numeric(dbh)) %>%
+            filter(dbh < 500)
 
         # draw the histogram with the specified number of bins
         ggplot(data = stems_plot, aes(x = dbh, fill = CensusID)) +
-            geom_histogram(data = stems_plot[stems_plot$CensusID == input$stems_plot,], breaks = bins, alpha = 0.5, position = "identity") +
+            geom_histogram(bins = input$bins, alpha = 0.5, position = "identity") +
             labs(title = "Distrubution of Tree Diameters at the Smithsonian Conservation Biology \n Institute (SCBI) in Front Royal, VA ",
                  x = "Diameter at Breast Height (DBH)",
                  y= "Number of Trees")
