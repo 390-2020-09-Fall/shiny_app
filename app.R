@@ -9,54 +9,40 @@
 
 library(shiny)
 
-library(tidyverse)
-library(readr)
-
-stem1 <- read_csv("data/scbi.stem1.csv")
-stem2 <- read_csv("data/scbi.stem2.csv")
-stem3 <- read_csv("data/scbi.stem3.csv")
-
-alive <- rbind(stem1, stem2, stem3) %>%
-  mutate(
-    ExactDate = lubridate::mdy(ExactDate),
-    DFstatus = as.factor(DFstatus),
-    dbh = as.numeric(dbh),
-    CensusID = as.numeric(CensusID),
-    census_time = ifelse(CensusID == 1, "2008-2010",
-                         ifelse(
-                           CensusID == 2, "2013",
-                           ifelse(CensusID == 3, "2018", "0")
-                         ))
-  ) %>%
-  filter(DFstatus == "alive")
-
+# Define UI for application that draws a histogram
 ui <- fluidPage(
-  titlePanel("Histogram of dbh of trees in census (for alive trees only)"),
-  sidebarLayout(sidebarPanel(
-    selectInput("census_time",
-                "Time of Census:",
-                choices = as.character(unique(alive$census_time)))
-  ),
-  mainPanel(plotOutput("distPlot")))
 
+    # Application title
+    titlePanel("Old Faithful Geyser Data"),
 
+    # Sidebar with a slider input for number of bins
+    sidebarLayout(
+        sidebarPanel(
+            sliderInput("bins",
+                        "Number of bins:",
+                        min = 1,
+                        max = 50,
+                        value = 30)
+        ),
+
+        # Show a plot of the generated distribution
+        mainPanel(
+           plotOutput("distPlot")
+        )
+    )
 )
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
 
-  census_filter <- reactive({
-    each_census <-
-      filter(alive, census_time == toString(input$census_time))
-    return(each_census)
-  })
+    output$distPlot <- renderPlot({
+        # generate bins based on input$bins from ui.R
+        x    <- faithful[, 2]
+        bins <- seq(min(x), max(x), length.out = input$bins + 1)
 
-  output$distPlot <- renderPlot({
-    ggplot(census_filter(), aes(x = dbh)) +
-      geom_histogram() +
-      labs(x = "Diameter at breast height (dbh), unit: centimeter", y = "number of trees")
-  })
-
+        # draw the histogram with the specified number of bins
+        hist(x, breaks = bins, col = 'darkgray', border = 'white')
+    })
 }
 
 # Run the application
