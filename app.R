@@ -8,6 +8,7 @@
 #
 
 library(shiny)
+
 library(tidyverse)
 library(readr)
 
@@ -37,9 +38,13 @@ ui <- fluidPage(
                 choices = as.character(unique(alive$census_time)))
   ),
   mainPanel(plotOutput("distPlot")))
+
+
 )
 
+# Define server logic required to draw a histogram
 server <- function(input, output) {
+
   census_filter <- reactive({
     each_census <-
       filter(alive, census_time == toString(input$census_time))
@@ -51,6 +56,7 @@ server <- function(input, output) {
       geom_histogram() +
       labs(x = "Diameter at breast height (dbh), unit: centimeter", y = "number of trees")
   })
+
 }
 
 # Run the application
