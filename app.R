@@ -16,6 +16,9 @@ library(fpp2)
 library(ggfortify)
 library(lubridate)
 
+total_alive <- total_alive %>%
+  mutate(date = mdy(ExactDate))
+
 ui <- fluidPage(
     sidebarLayout(
         sidebarPanel(
