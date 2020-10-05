@@ -23,14 +23,14 @@ ui <- fluidPage(
             #Input for bin1 variable
             sliderInput("bin1",
                         "Number of bins for Census 1:",
-                        min = 0,
+                        min = 1,
                         max = 200,
                         value = 20)
         ,
         #Input for bin2 variable
             sliderInput("bin2",
                     "Number of bins for Census 2:",
-                    min = 0,
+                    min = 1,
                     max = 200,
                     value = 20)
         ),
@@ -53,11 +53,12 @@ server <- function(input, output) {
         bin2 <- seq(min(stem2$dbh), max(stem2$dbh), length.out = input$bin2 + 1)
 
         # draw the histogram with the specified number of bins
-        hist(stem1$dbh, breaks=bin1, ylim = c(0,47241),col=rgb(1,0,0,0.5), xlab="dbh",
+        #max count at break = 1 is 55293 for stem 2 and 40167 for stem 1 --> choose the higher range.
+        hist(stem1$dbh, breaks=bin1, ylim = c(0,55300),col=rgb(1,0,0,0.5), xlab="dbh",
              ylab="frequency", main = " ")
 
         # Second with add=T to plot on top
-        hist(stem2$dbh, breaks=bin2, ylim = c(0,47241), col=rgb(0,0,1,0.5), add=T)
+        hist(stem2$dbh, breaks=bin2, ylim = c(0,55300), col=rgb(0,0,1,0.5), add=T)
 
         # Add legend
         legend("topright", legend=c("Census 1: 2008-2010","Census 2: 2013"),
