@@ -56,7 +56,6 @@ server <- function(input, output) {
 
 
 
-
     output$histPlot <- renderPlot({
         # generate bins based on input$bins from ui.R
         x <- stems_plot[, 2]
