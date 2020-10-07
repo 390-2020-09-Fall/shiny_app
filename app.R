@@ -16,9 +16,9 @@ library(fpp2)
 library(ggfortify)
 library(lubridate)
 
-stem3 <- read.csv("tree_main_census/data/census-csv-files/scbi.stem3.csv")
-stem2 <-read.csv("tree_main_census/data/census-csv-files/scbi.stem2.csv")
-stem1<-read.csv("tree_main_census/data/census-csv-files/scbi.stem1.csv")
+scbi_stem3 <- read.csv("tree_main_census/data/census-csv-files/scbi.stem3.csv")
+scbi_stem2 <-read.csv("tree_main_census/data/census-csv-files/scbi.stem2.csv")
+scbi_stem1<-read.csv("tree_main_census/data/census-csv-files/scbi.stem1.csv")
 
 scbi_stem2_notalive <- scbi_stem2 %>%
   filter(DFstatus != "alive" &
