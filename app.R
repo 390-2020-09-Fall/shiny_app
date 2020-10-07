@@ -94,7 +94,9 @@ total_alive %>%
   filter(freq >= 2)
 
 total_alive <- total_alive %>%
-  mutate(date = mdy(ExactDate))
+  mutate(date = mdy(ExactDate)) %>%
+  mutate(dbh = as.numeric(dbh))
+
 
 ui <- fluidPage(
     sidebarLayout(
