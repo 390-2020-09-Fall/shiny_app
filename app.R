@@ -15,6 +15,55 @@ library(fpp3)
 library(fpp2)
 library(ggfortify)
 library(lubridate)
+
+stem3 <- read.csv("tree_main_census/data/census-csv-files/scbi.stem3.csv")
+stem2 <-read.csv("tree_main_census/data/census-csv-files/scbi.stem2.csv")
+stem1<-read.csv("tree_main_census/data/census-csv-files/scbi.stem1.csv")
+
+scbi_stem2_notalive <- scbi_stem2 %>%
+  filter(DFstatus != "alive" &
+           DFstatus != "prior" &
+           DFstatus != "missing" &
+           DFstatus != "NULL")
+
+scbi_stem2_alive <- scbi_stem2  %>%
+  filter(DFstatus != "stem dead" &
+           DFstatus != "broken below" &
+           DFstatus != "prior" &
+           DFstatus != "missing")
+
+scbi_stem1_notalive <- scbi_stem1 %>%
+  filter(DFstatus != "alive" &
+           DFstatus != "prior" &
+           DFstatus != "missing" &
+           DFstatus != "NULL")
+
+scbi_stem1_alive <- scbi_stem1  %>%
+  filter(DFstatus != "stem dead" &
+           DFstatus != "broken below" &
+           DFstatus != "prior" &
+           DFstatus != "missing")
+new_scbi_stem1_alive <-scbi_stem1_alive %>%
+  #filter(sp %in% c("libe")) %>%
+  filter(quadrat <=300 |
+           quadrat >= 1000) %>%
+  filter(treeID <= 300)
+
+new_scbi_stem1_alive <-new_scbi_stem1_alive[duplicated(new_scbi_stem1_alive$tag), ]
+new_scbi_stem1_alive <-new_scbi_stem1_alive[duplicated(new_scbi_stem1_alive$treeID), ]
+
+new_scbi_stem2_alive <-scbi_stem2_alive %>%
+  #filter(sp %in% c( "libe")) %>%
+  filter(quadrat <=300 |
+           quadrat >= 1000) %>%
+  filter(treeID <= 300)
+
+
+new_scbi_stem2_alive <-new_scbi_stem2_alive[duplicated(new_scbi_stem2_alive$tag), ]
+new_scbi_stem2_alive <-new_scbi_stem2_alive[duplicated(new_scbi_stem2_alive$treeID), ]
+
+
+
 total_alive <- rbind(new_scbi_stem1_alive, new_scbi_stem2_alive)  %>%
   select("sp", "quadrat", "dbh", "ExactDate","date",
          "quadrat", "treeID", "StemTag", "tag",   "MeasureID") %>%
