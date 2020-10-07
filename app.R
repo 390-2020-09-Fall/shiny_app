@@ -31,6 +31,22 @@ total_alive %>%
 total_alive <- total_alive %>%
   mutate(date = mdy(ExactDate))
 
+total_alive <- rbind(new_scbi_stem1_alive, new_scbi_stem2_alive)  %>%
+  select("sp", "quadrat", "dbh", "ExactDate","date",
+         "quadrat", "treeID", "StemTag", "tag",   "MeasureID") %>%
+  filter(!dbh %in% c(0, "NULL")) %>%
+  filter(StemTag != 10) %>%
+  group_by(treeID, StemTag) %>%
+  filter(n() >= 2 )
+
+total_alive %>%
+  group_by(treeID, StemTag) %>%
+  summarize(freq = n()) %>%
+  filter(freq >= 2)
+
+total_alive <- total_alive %>%
+  mutate(date = mdy(ExactDate))
+
 ui <- fluidPage(
     sidebarLayout(
         sidebarPanel(
