@@ -11,6 +11,7 @@ library(fpp2)
 library(ggfortify)
 library(lubridate)
 library(shiny)
+library(scales)
 ```
 
 ```{r setup, include=FALSE}
@@ -127,6 +128,7 @@ total_notalive <- rbind(new_scbi_stem2_notalive,
                          "treeID", "StemTag", "tag", "MeasureID") %>%
                   filter(!dbh %in% c(0, "NULL")) 
 
+
 ```
 
 ```{r}
@@ -146,6 +148,7 @@ new_scbi_stem2_notalive <- new_scbi_stem2_notalive %>%
 
 new_scbi_stem1_notalive <- new_scbi_stem1_notalive %>%
    mutate(date = mdy(ExactDate))
+
 ```
 
 ```{r}
@@ -184,7 +187,7 @@ server <- function(input, output) {
                  color = quadrat)) +
           ggtitle("Specie's DBH based on Quadrat (2009-2013)") +
           ylab("Diameter At Breast Height") +
-          xlab("Year")
+          xlab("Year") 
           
                 
   })
