@@ -3,11 +3,10 @@ library(shiny)
 library(tidyverse)
 library(readr)
 
-setwd("~/Desktop/390/SCBI-ForestGEO-Data/tree_main_census/data/census-csv-files/")
-scbi_stem1 <- read_csv("scbi.stem1.csv")
-scbi_stem2 <- read_csv("scbi.stem2.csv")
-scbi_stem3 <- read_csv("scbi.stem3.csv")
-scbi_spptable <- read_csv("scbi.spptable.csv")
+scbi_stem1 <- read_csv("data/scbi.stem1 copy.csv")
+scbi_stem2 <- read_csv("data/scbi.stem2 copy.csv")
+scbi_stem3 <- read_csv("data/scbi.stem3 copy.csv")
+scbi_spptable <- read_csv("data/scbi.spptable copy.csv")
 
 # Set "base plot" of points that won't change
 stem1 <- scbi_stem1 %>%
