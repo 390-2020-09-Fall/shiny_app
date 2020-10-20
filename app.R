@@ -57,10 +57,6 @@ server <- function(input, output) {
 
 
     output$histPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x <- stems_plot[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins)
-
         stems_plot <- stems %>%
             filter(dbh != "NULL") %>%
             filter(CensusID %in% input$stems_plot) %>%
@@ -69,6 +65,10 @@ server <- function(input, output) {
             mutate(CensusID = as.factor(CensusID),
                    dbh = as.numeric(dbh)) %>%
             filter(dbh < 500)
+
+        # generate bins based on input$bins from ui.R
+        x <- stems_plot[, 2]
+        bins <- seq(min(x), max(x), length.out = input$bins)
 
         # draw the histogram with the specified number of bins
         ggplot(data = stems_plot, aes(x = dbh, fill = CensusID)) +
