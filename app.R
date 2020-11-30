@@ -47,7 +47,6 @@ names(year.labs) <- c("1", "2", "3")
 
 ui <- fluidPage(
 
-
     titlePanel("Average DBH for Each Genus in the SCBI Census"),
 
 
@@ -81,6 +80,7 @@ ui <- fluidPage(
         plotOutput("distPlot")
       )
     )
+  )
 )
 
 
