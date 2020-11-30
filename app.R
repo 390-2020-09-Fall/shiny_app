@@ -8,7 +8,6 @@ scbi_stem2 <- read_csv("data/scbi.stem2 copy.csv")
 scbi_stem3 <- read_csv("data/scbi.stem3 copy.csv")
 scbi_spptable <- read_csv("data/scbi.spptable copy.csv")
 
-# Set "base plot" of points that won't change
 stem1 <- scbi_stem1 %>%
   filter(dbh != "NULL") %>%
   mutate(dbh = as.numeric(dbh)) %>%
@@ -54,7 +53,7 @@ ui <- fluidPage(
 
     sidebarLayout(
       sidebarPanel(
-        selectInput("census_year", "Census Year",
+        selectInput("census_year", "CensusYear",
                     choices = c("2008" = "1","2013" = "2", "2018" = "3"),
                     selected = "3"),
         checkboxGroupInput("Genus", "Genus",
@@ -78,26 +77,27 @@ ui <- fluidPage(
                                         "Sassafras","Tilia","Ulmus","Viburnum"),
                            inline = FALSE),
       ),
-      plotOutput("avg_dbh")
+      mainPanel(
+        plotOutput("distPlot")
+      )
     )
 )
 
 
-
-
 server <- function(input, output) {
 
-    output$distplot <- renderPlot({
+    output$distPlot <- renderPlot({
+        Genus <- input$Genus
+        CensusYear <- input$census_year
+        params <- c(Genus, CensusYear)
 
-        ggplot(data = genus_dbh, mapping = aes(x = Genus, y = avg_dbh, fill = census_year))+
+        ggplot(data = genus_dbh, mapping = aes(reorder(Genus, -avg_dbh), y = avg_dbh, fill = census_year))+
           geom_bar(color = "white", stat='identity')+
           labs(title = "Average DBH for Each Genus in the SCBI Census", subtitle = "dark blue: 2008        medium blue: 2013        light blue: 2018", x = "Genus", y = "Average DBH")+
           theme(axis.text.x=element_text(angle = 90, size = 9), legend.position = "none")
     })
 
 }
-
-
 
 
 shinyApp(ui = ui, server = server)
