@@ -75,7 +75,7 @@ ui <- fluidPage(
 server <- function(input, output, session) {
 
   filtered <- reactive({
-    genus_dbh_filtered <- filter( # Filters the data by user selected input for use in the plot
+    genus_dbh_filtered <- filter(
       genus_dbh,
       census == toString(input$census)
     )
