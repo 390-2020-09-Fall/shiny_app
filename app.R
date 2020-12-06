@@ -1,4 +1,3 @@
-
 library(shiny)
 library(tidyverse)
 library(readr)
@@ -13,24 +12,30 @@ stem1 <- scbi_stem1 %>%
   mutate(dbh = as.numeric(dbh)) %>%
   select(sp, dbh, CensusID) %>%
   group_by(sp) %>%
-  summarize(avg_dbh_sp = mean(dbh),
-            census_year = mean(CensusID))
+  summarize(
+    avg_dbh_sp = mean(dbh),
+    census_year = mean(CensusID)
+  )
 
 stem2 <- scbi_stem2 %>%
   filter(dbh != "NULL") %>%
   mutate(dbh = as.numeric(dbh)) %>%
   select(sp, CensusID, dbh) %>%
   group_by(sp) %>%
-  summarize(avg_dbh_sp = mean(dbh),
-            census_year = mean(CensusID))
+  summarize(
+    avg_dbh_sp = mean(dbh),
+    census_year = mean(CensusID)
+  )
 
 stem3 <- scbi_stem3 %>%
   filter(dbh != "NULL") %>%
   mutate(dbh = as.numeric(dbh)) %>%
   select(sp, CensusID, dbh) %>%
   group_by(sp) %>%
-  summarize(avg_dbh_sp = mean(dbh),
-            census_year = mean(CensusID))
+  summarize(
+    avg_dbh_sp = mean(dbh),
+    census_year = mean(CensusID)
+  )
 
 stem_joined <- rbind(stem1, stem2, stem3)
 
@@ -38,66 +43,51 @@ genus_dbh <- stem_joined %>%
   inner_join(scbi_spptable, by = "sp") %>%
   select(Genus, avg_dbh_sp, census_year) %>%
   group_by(Genus, census_year) %>%
-  summarize(avg_dbh = mean(avg_dbh_sp))
-
-year.labs <- c("2008", "2013", "2018")
-names(year.labs) <- c("1", "2", "3")
-
-
+  summarize(avg_dbh = mean(avg_dbh_sp)) %>%
+  mutate(
+    CensusID = as_factor(census_year),
+    census = case_when(
+      CensusID == 1 ~ "2008",
+      CensusID == 2 ~ "2013", # Replaced it with this case_when() statement
+      CensusID == 3 ~ "2018"
+    )
+  ) %>%
+  select(Genus, avg_dbh, census) # Selected columns to simplify
 
 ui <- fluidPage(
+  titlePanel("Average DBH for Each Genus in the SCBI Census"),
 
-
-    titlePanel("Average DBH for Each Genus in the SCBI Census"),
-
-
-    sidebarLayout(
-      sidebarPanel(
-        selectInput("census_year", "CensusYear",
-                    choices = c("2008" = "1","2013" = "2", "2018" = "3"),
-                    selected = "3"),
-        checkboxGroupInput("Genus", "Genus",
-                           choices = c("Acer","Ailanthus","Amelanchier","Asimina",
-                                       "Berberis","Carpinus","Carya","Castanea","Celtis",
-                                       "Cercis","Chionanthus","Cornus","Corylus",
-                                       "Crataegus","Diospyros","Elaeagnus","Euonymus",
-                                       "Fagus","Fraxinus","Hamamelis","Ilex","Juglans",
-                                       "Juniperus","Lindera","Liriodendron","Lonicera","Nyssa",
-                                       "Paulownia","Pinus","Platanus","Prunus","Quercus",
-                                       "Rhododendron","Robinia","Rosa","Rubus","Sambucus",
-                                       "Sassafras","Tilia","Ulmus","Viburnum"),
-                           selected = c("Acer","Ailanthus","Amelanchier","Asimina",
-                                        "Berberis","Carpinus","Carya","Castanea","Celtis",
-                                        "Cercis","Chionanthus","Cornus","Corylus",
-                                        "Crataegus","Diospyros","Elaeagnus","Euonymus",
-                                        "Fagus","Fraxinus","Hamamelis","Ilex","Juglans",
-                                        "Juniperus","Lindera","Liriodendron","Lonicera","Nyssa",
-                                        "Paulownia","Pinus","Platanus","Prunus","Quercus",
-                                        "Rhododendron","Robinia","Rosa","Rubus","Sambucus",
-                                        "Sassafras","Tilia","Ulmus","Viburnum"),
-                           inline = FALSE),
-      ),
-      mainPanel(
-        plotOutput("distPlot")
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("census",
+                  "Census",
+                  choices = as.character(unique(genus_dbh$census)) # Substituted a vector made from the data rather than  homemade vector which would is harder to match on
       )
+
+
+    ),
+    mainPanel(
+      plotOutput("distPlot")
     )
+  )
 )
 
+server <- function(input, output, session) {
 
-server <- function(input, output) {
+  filtered <- reactive({
+    genus_dbh_filtered <- filter( # Filters the data by user selected input for use in the plot
+      genus_dbh,
+      census == toString(input$census)
+    )
+    return(genus_dbh_filtered)
+  })
 
-    output$distPlot <- renderPlot({
-        Genus <- input$Genus
-        CensusYear <- input$census_year
-        params <- c(Genus, CensusYear)
-
-        ggplot(data = genus_dbh, mapping = aes(reorder(Genus, -avg_dbh), y = avg_dbh, fill = census_year))+
-          geom_bar(color = "white", stat='identity')+
-          labs(title = "Average DBH for Each Genus in the SCBI Census", subtitle = "dark blue: 2008        medium blue: 2013        light blue: 2018", x = "Genus", y = "Average DBH")+
-          theme(axis.text.x=element_text(angle = 90, size = 9), legend.position = "none")
-    })
-
+  output$distPlot <- renderPlot({
+    ggplot(data = filtered(), mapping = aes(reorder(Genus, -avg_dbh), y = avg_dbh)) +
+      geom_bar(stat = "identity", fill = "darkblue") +
+      labs(x = "Genus", y = "Average Diameter at Breast Height (DBH)") +
+      theme(axis.text.x = element_text(angle = 90, size = 11))
+  })
 }
-
 
 shinyApp(ui = ui, server = server)
