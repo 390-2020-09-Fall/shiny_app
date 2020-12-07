@@ -61,10 +61,8 @@ ui <- fluidPage(
     sidebarPanel(
       selectInput("census",
                   "Census",
-                  choices = as.character(unique(genus_dbh$census)) # Substituted a vector made from the data rather than  homemade vector which would is harder to match on
+                  choices = as.character(unique(genus_dbh$census)) # Substituted a vector made from the data rather than homemade vector
       )
-
-
     ),
     mainPanel(
       plotOutput("distPlot")
